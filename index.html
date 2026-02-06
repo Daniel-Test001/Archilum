@@ -1,1 +1,491 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <link rel="shortcut icon" href="favicon.png" type="image/x-icon">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ArchiLum </title>
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="Archi.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            <i class="fas fa-cube"></i>
+            <h1>Archi<span class="highlight">Lum</span></h1>
+            <span class="version">v0.1 -Concept de Base</span>
+        </div>
+        
+        <div class="user-info">
+            <button class="btn btn-outline" id="helpBtn">
+                <i class="fas fa-question-circle"></i> Aide
+            </button>
+            <button class="btn btn-primary" id="exportAllBtn">
+                <i class="fas fa-download"></i> Exporter Projet
+            </button>
+        </div>
+    </header>
 
+    <div class="container">
+        <div class="sidebar left" id="bimPanel">
+            <div class="panel-header">
+                <i class="fas fa-drafting-compass"></i>
+                <h3>Mode BIM</h3>
+                <span class="badge">ArchiCAD-like</span>
+            </div>
+            
+            <div class="tool-section">
+                <h4><i class="fas fa-draw-polygon"></i> Outils de Création</h4>
+                <div class="tool-grid">
+                    <button class="tool-btn active" data-tool="wall" id="wallTool">
+                        <i class="fas fa-square"></i>
+                        <span>Mur</span>
+                    </button>
+                    <button class="tool-btn" data-tool="window" id="windowTool">
+                        <i class="fas fa-square"></i>
+                        <span>Fenêtre</span>
+                    </button>
+                    <button class="tool-btn" data-tool="door" id="doorTool">
+                        <i class="fas fa-door-open"></i>
+                        <span>Porte</span>
+                    </button>
+                    <button class="tool-btn" data-tool="furniture" id="furnitureTool">
+                        <i class="fas fa-couch"></i>
+                        <span>Mobilier</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="tool-section">
+                <h4><i class="fas fa-palette"></i> Propriétés</h4>
+                <div class="property-group">
+                    <label for="materialSelect">Matériau :</label>
+                    <select id="materialSelect" class="property-select">
+                        <option value="brick">Brique rouge</option>
+                        <option value="concrete">Béton</option>
+                        <option value="wood">Bois</option>
+                        <option value="glass">Verre</option>
+                        <option value="metal">Métal</option>
+                    </select>
+                </div>
+                
+                <div class="property-group">
+                    <label for="colorPicker">Couleur :</label>
+                    <input type="color" id="colorPicker" value="#3b82f6" class="color-input">
+                    <span id="colorValue" class="color-value">#3b82f6</span>
+                </div>
+                
+                <div class="property-group">
+                    <label for="heightSlider">Hauteur : <span id="heightValue">2.5m</span></label>
+                    <input type="range" id="heightSlider" min="1" max="10" step="0.1" value="2.5" class="slider">
+                </div>
+            </div>
+            
+            <div class="tool-section">
+                <h4><i class="fas fa-layer-group"></i> Calques</h4>
+                <div class="layers-list">
+                    <div class="layer-item active">
+                        <input type="checkbox" checked>
+                        <span>Murs</span>
+                        <span class="layer-count">3</span>
+                    </div>
+                    <div class="layer-item">
+                        <input type="checkbox" checked>
+                        <span>Ouvertures</span>
+                        <span class="layer-count">2</span>
+                    </div>
+                    <div class="layer-item">
+                        <input type="checkbox" checked>
+                        <span>Mobilier</span>
+                        <span class="layer-count">1</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="stats">
+                <div class="stat-item">
+                    <i class="fas fa-ruler-combined"></i>
+                    <div>
+                        <span class="stat-value" id="surfaceArea">0 m²</span>
+                        <span class="stat-label">Surface</span>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-cube"></i>
+                    <div>
+                        <span class="stat-value" id="objectCount">0</span>
+                        <span class="stat-label">Objets</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main 3D View -->
+        <div class="main-content">
+            <div class="view-controls">
+                <div class="view-tabs">
+                    <button class="view-tab active" data-view="3d">
+                        <i class="fas fa-cube"></i> 3D
+                    </button>
+                    <button class="view-tab" data-view="top">
+                        <i class="fas fa-th-large"></i> Plan
+                    </button>
+                    <button class="view-tab" data-view="front">
+                        <i class="fas fa-eye"></i> Élévation
+                    </button>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="btn btn-sm" id="toggleGrid">
+                        <i class="fas fa-th"></i> Grille
+                    </button>
+                    <button class="btn btn-sm" id="toggleAxes">
+                        <i class="fas fa-crosshairs"></i> Axes
+                    </button>
+                    <button class="btn btn-sm btn-danger" id="clearScene">
+                        <i class="fas fa-trash"></i> Tout effacer
+                    </button>
+                </div>
+            </div>
+            
+            <div id="canvasContainer">
+                <canvas id="sceneCanvas"></canvas>
+                <div class="loading-overlay" id="loadingOverlay">
+                    <div class="loader"></div>
+                    <p>Chargement du moteur 3D...</p>
+                </div>
+                
+                <div class="scene-info">
+                    <div class="info-badge">
+                        <i class="fas fa-mouse-pointer"></i>
+                        <span>Cliquez pour placer un mur</span>
+                    </div>
+                    <div class="info-badge">
+                        <i class="fas fa-arrows-alt"></i>
+                        <span>Faites glisser pour tourner</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mode-toggle">
+                <button class="mode-btn active" id="bimModeBtn">
+                    <i class="fas fa-drafting-compass"></i>
+                    <span>Mode BIM</span>
+                </button>
+                <button class="mode-btn" id="renderModeBtn">
+                    <i class="fas fa-camera"></i>
+                    <span>Mode Rendu</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="sidebar right" id="renderPanel">
+            <div class="panel-header">
+                <i class="fas fa-camera"></i>
+                <h3>Mode Rendu</h3>
+                <span class="badge">Lumion-like</span>
+            </div>
+            
+            <div class="tool-section">
+                <h4><i class="fas fa-sun"></i> Environnement</h4>
+                <div class="property-group">
+                    <label for="timeOfDay">Heure du jour :</label>
+                    <input type="range" id="timeOfDay" min="0" max="24" step="0.5" value="12" class="slider">
+                    <div class="slider-labels">
+                        <span>Nuit</span>
+                        <span id="timeValue">12:00</span>
+                        <span>Jour</span>
+                    </div>
+                </div>
+                
+                <div class="property-group">
+                    <label for="weatherSelect">Météo :</label>
+                    <select id="weatherSelect" class="property-select">
+                        <option value="sunny">Ensoleillé</option>
+                        <option value="cloudy">Nuageux</option>
+                        <option value="overcast">Couvert</option>
+                        <option value="foggy">Brumieux</option>
+                    </select>
+                </div>
+                
+                <div class="property-group">
+                    <label for="shadowIntensity">Intensité ombres : <span id="shadowValue">75%</span></label>
+                    <input type="range" id="shadowIntensity" min="0" max="100" value="75" class="slider">
+                </div>
+            </div>
+                                                               
+            <div class="tool-section">
+                <h4><i class="fas fa-tree"></i> Assets</h4>
+                <div class="assets-grid">
+                    <button class="asset-btn" data-asset="tree">
+                        <i class="fas fa-tree"></i>
+                        <span>Arbre</span>
+                    </button>
+                    <button class="asset-btn" data-asset="person">
+                        <i class="fas fa-male"></i>
+                        <span>Personne</span>
+                    </button>
+                    <button class="asset-btn" data-asset="car">
+                        <i class="fas fa-car"></i>
+                        <span>Voiture</span>
+                    </button>
+                    <button class="asset-btn" data-asset="plant">
+                        <i class="fas fa-seedling"></i>
+                        <span>Plante</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="tool-section">
+                <h4><i class="fas fa-filter"></i> Effets Visuels</h4>
+                <div class="effects-list">
+                    <div class="effect-item">
+                        <input type="checkbox" id="effectBloom" checked>
+                        <label for="effectBloom">Bloom (éclat)</label>
+                    </div>
+                    <div class="effect-item">
+                        <input type="checkbox" id="effectSsao" checked>
+                        <label for="effectSsao">SSAO (ombres)</label>
+                    </div>
+                    <div class="effect-item">
+                        <input type="checkbox" id="effectVignette">
+                        <label for="effectVignette">Vignettage</label>
+                    </div>
+                    <div class="effect-item">
+                        <input type="checkbox" id="effectDof">
+                        <label for="effectDof">Profondeur de champ</label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tool-section">
+                <h4><i class="fas fa-video"></i> Export</h4>
+                <div class="export-options">
+                    <button class="btn btn-block btn-success" id="renderImage">
+                        <i class="fas fa-image"></i> Rendu Image
+                    </button>
+                    <button class="btn btn-block" id="renderVideo">
+                        <i class="fas fa-video"></i> Animation
+                    </button>
+                    <button class="btn btn-block btn-outline" id="export3D">
+                        <i class="fas fa-cube"></i> Exporter 3D
+                    </button>
+                </div>
+                
+                <div class="quality-selector">
+                    <label>Qualité :</label>
+                    <div class="quality-buttons">
+                        <button class="quality-btn active" data-quality="low">Basse</button>
+                        <button class="quality-btn" data-quality="medium">Moyenne</button>
+                        <button class="quality-btn" data-quality="high">Haute</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-left">
+            <span class="status-indicator online">
+                <i class="fas fa-circle">
+
+                </i> En ligne
+            </span>
+            <span class="api-status" id="apiStatus">
+                <i class="fas fa-plug">
+
+                </i> API: Connecté
+            </span>
+        </div>
+        
+        <div class="footer-center">
+            <span class="hint">
+                <i class="fas fa-lightbulb">
+
+                </i>
+                Astuce : Appuyez sur H pour afficher/masquer les panneaux
+            </span>
+        </div>
+        
+        <div class="footer-right">
+            <span id="fpsCounter">60 FPS</span>
+            <span id="triangleCount">0 triangles</span>
+        </div>
+    </footer>
+
+    <div class="modal" id="exportModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-download">
+
+                </i> Exporter le Projet</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="export-format">
+                    <h4>Format d'export :</h4>
+                    <div class="format-grid">
+                        <div class="format-card" data-format="image">
+                            <i class="fas fa-image">
+
+                            </i>
+                            <span>Image PNG</span>
+                            <small>1920×1080 px</small>
+                        </div>
+                        <div class="format-card" data-format="gltf">
+                            <i class="fas fa-cube">
+
+                            </i>
+                            <span>GLTF 3D</span>
+                            <small>Modèle interactif</small>
+                        </div>
+                        <div class="format-card" data-format="json">
+                            <i class="fas fa-code"></i>
+                            <span>JSON Project</span>
+                            <small>Données brutes</small>
+                        </div>
+                        <div class="format-card" data-format="ifc">
+                            <i class="fas fa-building"></i>
+                            <span>IFC BIM</span>
+                            <small>Standard BIM</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="export-settings">
+                    <h4>Paramètres :</h4>
+                    <div class="setting-group">
+                        <label>
+                            <input type="checkbox" checked>
+                            Inclure les textures
+                        </label>
+                        <label>
+                            <input type="checkbox" checked>
+                            Inclure les lumières
+                        </label>
+                        <label>
+                            <input type="checkbox">
+                            Inclure les assets
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="export-preview" id="exportPreview">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" id="cancelExport">
+                Annuler
+                </button>
+                <button class="btn btn-primary" id="confirmExport">
+                    <i class="fas fa-download"></i> Télécharger
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toastContainer">
+
+    </div>
+<script src="api-server.js"></script>
+    <script src="Archi.jsx">
+
+
+    </script>
+    <script type="module">
+import { create } from 'zustand';
+
+export const useSceneStore = create((set) => ({
+  // Mode
+  mode: 'bim', // 'bim' | 'render'
+  setMode: (mode) => set({ mode }),
+
+  // Tools
+  activeTool: 'wall',
+  setActiveTool: (tool) => set({ activeTool: tool }),
+
+  // Scene Objects
+  sceneObjects: [],
+  addObject: (obj) => set((state) => ({
+    sceneObjects: [...state.sceneObjects, obj]
+  })),
+  updateObject: (id, updates) => set((state) => ({
+    sceneObjects: state.sceneObjects.map((obj) =>
+      obj.id === id ? { ...obj, ...updates } : obj
+    )
+  })),
+  removeObject: (id) => set((state) => ({
+    sceneObjects: state.sceneObjects.filter((obj) => obj.id !== id)
+  })),
+  clearObjects: () => set({ sceneObjects: [] }),
+
+  // Materials & Colors
+  selectedMaterial: 'brick',
+  setSelectedMaterial: (material) => set({ selectedMaterial: material }),
+  selectedColor: '#3b82f6',
+  setSelectedColor: (color) => set({ selectedColor: color }),
+
+  // Properties
+  selectedHeight: 2.5,
+  setSelectedHeight: (height) => set({ selectedHeight: height }),
+
+  // Render Settings
+  timeOfDay: 12,
+  setTimeOfDay: (time) => set({ timeOfDay: time }),
+  weather: 'sunny',
+  setWeather: (weather) => set({ weather }),
+  shadowIntensity: 75,
+  setShadowIntensity: (intensity) => set({ shadowIntensity: intensity }),
+
+  // Effects
+  effects: {
+    bloom: true,
+    ssao: true,
+    vignette: false,
+    dof: false
+  },
+  toggleEffect: (effectName) => set((state) => ({
+    effects: {
+      ...state.effects,
+      [effectName]: !state.effects[effectName]
+    }
+  })),
+
+  // Layers
+  layers: [
+    { id: 'walls', name: 'Murs', visible: true, count: 3 },
+    { id: 'openings', name: 'Ouvertures', visible: true, count: 2 },
+    { id: 'furniture', name: 'Mobilier', visible: true, count: 1 }
+  ],
+  toggleLayer: (layerId) => set((state) => ({
+    layers: state.layers.map((layer) =>
+      layer.id === layerId ? { ...layer, visible: !layer.visible } : layer
+    )
+  })),
+
+  // Stats
+  stats: {
+    surfaceArea: 0,
+    objectCount: 0,
+    fps: 60,
+    triangles: 0
+  },
+  updateStats: (newStats) => set((state) => ({
+    stats: { ...state.stats, ...newStats }
+  })),
+
+  // API
+  apiConnected: false,
+  setApiConnected: (connected) => set({ apiConnected: connected })
+}));
+    </script>
+</body>
+</html>
